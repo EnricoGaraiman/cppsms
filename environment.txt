@@ -1,0 +1,18 @@
+Environment Anaconda
+
+Update anaconda la ultima versiune
+conda update conda
+conda update anaconda
+
+Environment 
+conda create --name cppsms --file requirements.txt
+conda activate cppsms
+
+
+# altele
+conda install -c conda-forge scikit-learn
+conda install -c conda-forge matplotlib
+conda list -e > requirements.txt
+
+conda create -n cppsms python=3.10
+conda activate cppsms
