@@ -1,5 +1,3 @@
-import matplotlib.pyplot as plt
 
-def test():
-    plt.plot([1, 2, 3], [1, 2, 3])
-    plt.show()
+def get_channels(img):
+    return [img[:, :, 0], img[:, :, 1], img[:, :, 2]]
