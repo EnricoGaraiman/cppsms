@@ -21,5 +21,13 @@ dataset_train, dataset_test = dataset.load_dataset_paths(data_train_dir, data_te
 
 train_features = features.get_features(dataset_train, img_height, img_width)
 print(np.shape(train_features))
-print(train_features)
+
+#features.plot_features(train_features[:, 0:3], 'Dataset train mean', 'Mean', False, True)
+#features.plot_features(train_features[:, 3:6], 'Dataset train variance', 'Variance', False, True)
+#features.plot_features(train_features[:, 6:9], 'Dataset train skewness', 'Skewness', False, True)
+features.plot_features(train_features[:, 9:12], 'Dataset train kurtosis', 'Kurtosis', False, True)
+
+
+
+
 
