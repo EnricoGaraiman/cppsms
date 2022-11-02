@@ -71,7 +71,7 @@ def get_features_classes(data_train_dir, img_height, img_width):
     all_classes_directory = glob.glob(data_train_dir + '/*')
     features = []
     helpers.progress(0, len(all_classes_directory))
-    for i, path in enumerate(all_classes_directory):
+    for index, path in enumerate(all_classes_directory):
         class_features = []
         features_classes = get_features(glob.glob(path + '/*'), img_height, img_width, False)
 
@@ -79,9 +79,15 @@ def get_features_classes(data_train_dir, img_height, img_width):
         for i in range(0, 3):
             class_features.append(np.mean(features_classes[:, i]))
 
-        # var
+        # var (https://stats.stackexchange.com/questions/300392/calculate-the-variance-from-variances)
         for i in range(3, 6):
-            class_features.append(np.mean(features_classes[:, i]))
+            mean_class = np.mean(features_classes[:, i - 3])
+            mean = features_classes[:, i - 3]
+            var = features_classes[:, i]
+            var_mean = 0
+            for j in range(0, len(mean)):
+                var_mean = var_mean + ((mean_class - mean[j]) ** 2 + var[j])
+            class_features.append(var_mean)
 
         # # skew = asimetrie
         # for i in range(6, 9):
@@ -92,7 +98,7 @@ def get_features_classes(data_train_dir, img_height, img_width):
         #     class_features.append(kurtosis(features_classes[:, i], fisher=False))
 
         features.append(class_features)
-        helpers.progress(i, len(all_classes_directory), 'Classes features')
+        helpers.progress(index, len(all_classes_directory), 'Classes features')
 
     return np.array(features, dtype=object)
 
