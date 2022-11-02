@@ -63,14 +63,14 @@ def dataset_distribution(data_train_dir):
         class_images_distribution.append(len(glob.glob(path + '/*')))
         class_labels.append((path.split('\\')[-1]).split('-')[-1])
 
-    y_pos = [i for i, _ in enumerate(class_labels)]
+    x_pos = [i for i, _ in enumerate(class_labels)]
 
     fig, ax = plt.subplots(figsize=(18, 9))
-    plt.barh(y_pos, class_images_distribution, color='green')
+    plt.bar(x_pos, class_images_distribution, color='green')
     plt.xlabel("Number of images", fontsize=12)
     plt.ylabel("Class", fontsize=12)
     plt.title("Data distribution", fontsize=16)
-    plt.yticks(y_pos, class_labels, fontsize=6)
+    plt.xticks(x_pos, class_labels, fontsize=8, rotation=45, ha='right')
     plt.tight_layout()
     plt.show()
     fig.savefig('results/training_data_distribution.jpg')

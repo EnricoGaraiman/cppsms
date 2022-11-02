@@ -19,11 +19,11 @@ def get_features(filenames, img_height, img_width, progress=True):
 
         channels = helpers.get_channels(img_resize)
 
-        #mean
+        # mean
         for channel in channels:
             img_features.append(np.mean(channel))
 
-        #var
+        # var
         for channel in channels:
             img_features.append(np.var(channel))
 

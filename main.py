@@ -41,4 +41,7 @@ features.plot_features_by_classes(train_classes_features[:, 3:6], 'Dataset train
 # features.plot_features_by_classes(train_classes_features[:, 6:9], 'Dataset train skewness by classes', 'Class Skewness', False, True)
 # features.plot_features_by_classes(train_classes_features[:, 9:12], 'Dataset train kurtosis by classes', 'Class Kurtosis', False, True)
 
+# ___________________________________________
+# COVARIANCE ANALYSIS
+# ___________________________________________
 
