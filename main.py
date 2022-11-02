@@ -25,8 +25,8 @@ dataset_train, dataset_test = dataset.load_dataset_paths(data_train_dir, data_te
 
 train_features = features.get_features(dataset_train.filenames, img_height, img_width)
 
-features.plot_features(train_features[:, 0:3], 'Dataset train mean', 'Mean', True, False)
-features.plot_features(train_features[:, 3:6], 'Dataset train variance', 'Variance', True, False)
+features.plot_features(train_features[:, 0:3], 'Dataset mean', 'Mean', True, False)
+features.plot_features(train_features[:, 3:6], 'Dataset variance', 'Variance', True, False)
 # features.plot_features(train_features[:, 6:9], 'Dataset train skewness', 'Skewness', False, True)
 # features.plot_features(train_features[:, 9:12], 'Dataset train kurtosis', 'Kurtosis', False, True)
 
@@ -36,8 +36,8 @@ features.plot_features(train_features[:, 3:6], 'Dataset train variance', 'Varian
 
 train_classes_features = features.get_features_classes(data_train_dir, img_height, img_width)
 
-features.plot_features_by_classes(train_classes_features[:, 0:3], 'Dataset train mean by classes', 'Class Mean', True, False)
-features.plot_features_by_classes(train_classes_features[:, 3:6], 'Dataset train variance by classes', 'Class Variance', True, False)
+features.plot_features_by_classes(train_classes_features[:, 0:3], 'Dataset mean by classes', 'Class Mean', True, False)
+features.plot_features_by_classes(train_classes_features[:, 3:6], 'Dataset variance by classes', 'Class Variance', True, False)
 # features.plot_features_by_classes(train_classes_features[:, 6:9], 'Dataset train skewness by classes', 'Class Skewness', False, True)
 # features.plot_features_by_classes(train_classes_features[:, 9:12], 'Dataset train kurtosis by classes', 'Class Kurtosis', False, True)
 
