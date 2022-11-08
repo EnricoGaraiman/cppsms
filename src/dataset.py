@@ -86,7 +86,7 @@ def load_img(filename, grayscale, bbox=None):
     if img.max() < 2: img = np.uint8(255 * img)
     if grayscale: img = rgb2gray(img)
     if bbox:
-        text = open('../../standfordDogsDataset/Annotation/' + filename.split('\\', 1)[-1].replace('.jpg', '').replace('\\', '/')).read()
+        text = open('stanfordDogsDataset/Annotation/' + filename.split('\\', 1)[-1].replace('.jpg', '').replace('\\', '/')).read()
         x_min = int(text.split('<xmin>')[1].split('</xmin>')[0])
         x_max = int(text.split('<xmax>')[1].split('</xmax>')[0])
         y_min = int(text.split('<ymin>')[1].split('</ymin>')[0])
