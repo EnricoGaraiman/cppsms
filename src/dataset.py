@@ -51,7 +51,7 @@ def dataset_examples_each_class(data_train_dir, img_height, img_width, show=True
         plt.tight_layout()
         if show:
             plt.show()
-        #fig.savefig('results/training_data_visualisation_' + str(interval[0]) + '-' + str(interval[1]) + '.jpg')
+        # fig.savefig('results/training_data_visualisation_' + str(interval[0]) + '-' + str(interval[1]) + '.jpg')
 
 
 # -----------------------------------------------------------------------------
