@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 
 def get_channels(img):
     return [img[:, :, 0], img[:, :, 1], img[:, :, 2]]
@@ -12,3 +13,6 @@ def progress(count, total, suffix=''):
     bar = '=' * filled_len + '-' * (bar_len - filled_len)
 
     sys.stdout.write('[%s] %s%s | %s\r' % (bar, percents, '%', suffix))
+
+
+rgb2gray = lambda img: np.uint8(0.3 * img[:,:,0] + 0.6 * img[:,:,1] + 0.1 * img[:,:,2])

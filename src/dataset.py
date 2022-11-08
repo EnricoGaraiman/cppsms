@@ -5,6 +5,7 @@ from skimage.transform import resize
 import os
 import glob
 import numpy as np
+from src.helpers import rgb2gray
 
 
 # -----------------------------------------------------------------------------
@@ -41,7 +42,8 @@ def dataset_examples_each_class(data_train_dir, img_height, img_width, show=True
         fig = plt.figure(figsize=(18, 9))
         for index, class_dir in enumerate(glob.glob(data_train_dir + '/*')[interval[0]: interval[1]]):
             plt.subplot(6, 10, index + 1)
-            img = io.imread(glob.glob(class_dir + '/*')[4])
+            # img = io.imread(glob.glob(class_dir + '/*')[4])
+            img = load_img(glob.glob(class_dir + '/*')[4], False, True)
             img_resize = resize(img, (img_height, img_width), anti_aliasing=True)
             plt.imshow(img_resize, cmap='gray')
             plt.title((class_dir.split('\\')[-1]).split('-')[-1])
@@ -49,7 +51,7 @@ def dataset_examples_each_class(data_train_dir, img_height, img_width, show=True
         plt.tight_layout()
         if show:
             plt.show()
-        fig.savefig('results/training_data_visualisation_' + str(interval[0]) + '-' + str(interval[1]) + '.jpg')
+        #fig.savefig('results/training_data_visualisation_' + str(interval[0]) + '-' + str(interval[1]) + '.jpg')
 
 
 # -----------------------------------------------------------------------------
@@ -73,4 +75,25 @@ def dataset_distribution(data_train_dir):
     plt.xticks(x_pos, class_labels, fontsize=8, rotation=45, ha='right')
     plt.tight_layout()
     plt.show()
-    fig.savefig('results/training_data_distribution.jpg')
+    #fig.savefig('results/training_data_distribution.jpg')
+
+
+# -----------------------------------------------------------------------------
+# Load Image
+# -----------------------------------------------------------------------------
+def load_img(filename, grayscale, bbox=None):
+    img = plt.imread(filename)
+    if img.max() < 2: img = np.uint8(255 * img)
+    if grayscale: img = rgb2gray(img)
+    if bbox:
+        text = open('../../standfordDogsDataset/Annotation/' + filename.split('\\', 1)[-1].replace('.jpg', '').replace('\\', '/')).read()
+        x_min = int(text.split('<xmin>')[1].split('</xmin>')[0])
+        x_max = int(text.split('<xmax>')[1].split('</xmax>')[0])
+        y_min = int(text.split('<ymin>')[1].split('</ymin>')[0])
+        y_max = int(text.split('<ymax>')[1].split('</ymax>')[0])
+        img = img[y_min:y_max, x_min:x_max]
+    return img
+
+
+
+
