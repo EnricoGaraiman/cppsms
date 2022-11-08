@@ -6,6 +6,9 @@ from scipy.stats import skew,kurtosis
 import matplotlib.pyplot as plt
 import os
 import glob
+import src.dataset as dataset
+import skimage.measure as measure
+import math as math
 
 
 def get_features(filenames, img_height, img_width, progress=True):
@@ -13,11 +16,11 @@ def get_features(filenames, img_height, img_width, progress=True):
     if progress:
         helpers.progress(0, len(filenames))
     for i, img_path in enumerate(filenames):
-        img = io.imread(img_path)
+        img = dataset.load_img(img_path, False, True)
         img_features = []
-        img_resize = resize(img, (img_height, img_width), anti_aliasing=True)
+        #img_resize = resize(img, (img_height, img_width), anti_aliasing=True)
 
-        channels = helpers.get_channels(img_resize)
+        channels = helpers.get_channels(img)
 
         # mean
         for channel in channels:
@@ -26,6 +29,14 @@ def get_features(filenames, img_height, img_width, progress=True):
         # var
         for channel in channels:
             img_features.append(np.var(channel))
+
+        #moments_hu
+        img_gray = helpers.rgb2gray(img)
+        mu = measure.moments_central(img_gray)
+        nu = measure.moments_normalized(mu)
+        hu = measure.moments_hu(nu)
+
+        img_features.extend(hu)
 
         # #skew = asimetrie
         # for channel in channels:
@@ -118,6 +129,51 @@ def plot_features_by_classes(features, title, name_of_feature, save=True, show=T
     plt.xlabel('Number of image')
     plt.legend(['R channel', 'G channel', 'B channel'], loc="lower left", mode="expand", ncol=3)
     plt.title(title)
+
+    if show:
+        plt.show()
+    if save:
+        fig.savefig('results/' + title + '.jpg')
+
+
+def rescale_moments_hu(hu):
+    rescale_hu = []
+    for h in hu:
+        rescale_hu.append(-1* math.copysign(1.0, h) * math.log10(abs(h)))
+
+    return rescale_hu
+
+def plot_moments_hu(features, title, name_of_feature, save=True, show=True):
+    fig = plt.figure()
+    plt.title(title)
+
+    hu1 = rescale_moments_hu(features[:, 0])
+    hu2 = rescale_moments_hu(features[:, 1])
+    hu3 = rescale_moments_hu(features[:, 2])
+    hu4 = rescale_moments_hu(features[:, 3])
+    hu5 = rescale_moments_hu(features[:, 4])
+    hu6 = rescale_moments_hu(features[:, 5])
+    hu7 = rescale_moments_hu(features[:, 6])
+
+    hu1.sort()
+    hu2.sort()
+    hu3.sort()
+    hu4.sort()
+    hu5.sort()
+    hu6.sort()
+    hu7.sort()
+
+    plt.plot(hu1, color='red')
+    plt.plot(hu2, color='peru')
+    plt.plot(hu3, color='olivedrab')
+    plt.plot(hu4, color='aqua')
+    plt.plot(hu5, color='blueviolet')
+    plt.plot(hu6, color='fuchsia')
+    plt.plot(hu7, color='navy')
+
+    plt.ylabel(name_of_feature)
+    plt.xlabel('Number of image')
+    plt.legend(['hu1', 'hu2', 'hu3', 'hu4', 'hu5', 'hu6', 'hu7'], loc="lower left", mode="expand", ncol=7)
 
     if show:
         plt.show()

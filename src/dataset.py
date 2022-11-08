@@ -83,7 +83,8 @@ def dataset_distribution(data_train_dir):
 # -----------------------------------------------------------------------------
 def load_img(filename, grayscale, bbox=None):
     img = plt.imread(filename)
-    if img.max() < 2: img = np.uint8(255 * img)
+
+    #if img.max() < 2: img = np.uint8(255 * img)
     if grayscale: img = rgb2gray(img)
     if bbox:
         text = open('stanfordDogsDataset/Annotation/' + filename.split('\\', 1)[-1].replace('.jpg', '').replace('\\', '/')).read()
@@ -92,7 +93,34 @@ def load_img(filename, grayscale, bbox=None):
         y_min = int(text.split('<ymin>')[1].split('</ymin>')[0])
         y_max = int(text.split('<ymax>')[1].split('</ymax>')[0])
         img = img[y_min:y_max, x_min:x_max]
+
     return img
+
+# -----------------------------------------------------------------------------
+# DISPLAY IMG BY INDEX
+# -----------------------------------------------------------------------------
+def display_img_by_index(data, index, title, save=True, show=True):
+    fig = plt.figure()
+
+    plt.title(title)
+    io.imshow(data[index])
+    print(np.shape(data[index]))
+
+    if show:
+        plt.show()
+    if save:
+        fig.savefig('results/' + title + '.jpg')
+
+# -----------------------------------------------------------------------------
+# DISPLAY LOAD DATASET
+# -----------------------------------------------------------------------------
+def load_dataset(filenames, bbox=None, grayscale=False):
+    images = []
+    for filename in filenames:
+        images.append(load_img(filename, grayscale, bbox))
+
+    return images
+
 
 
 
