@@ -99,12 +99,11 @@ def load_img(filename, grayscale, bbox=None):
 # -----------------------------------------------------------------------------
 # DISPLAY IMG BY INDEX
 # -----------------------------------------------------------------------------
-def display_img_by_index(data, index, title, save=True, show=True):
+def display_img_by_index(data, index, features, title , save=True, show=True):
     fig = plt.figure()
 
-    plt.title(title)
+    plt.title(title + ' (Value: ' + str(features[index]) + ')')
     io.imshow(data[index])
-    print(np.shape(data[index]))
 
     if show:
         plt.show()
