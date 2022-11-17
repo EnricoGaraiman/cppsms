@@ -16,3 +16,15 @@ def progress(count, total, suffix=''):
 
 
 rgb2gray = lambda img: np.uint8(0.299 * img[:,:,0] + 0.587 * img[:,:,1] + 0.144 * img[:, :, 2])
+
+mse = lambda x, y: np.mean((x - y) ** 2)
+
+
+
+
+
+# import splitfolders
+#
+# input_folder = 'stanfordDogsDataset/images'
+# output_folder = 'stanfordDogsDataset/split_images'
+# splitfolders.ratio(input_folder, output = output_folder, seed = 1337, ratio = (0.8, 0, 0.2))
