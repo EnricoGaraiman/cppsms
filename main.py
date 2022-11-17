@@ -64,6 +64,9 @@ dataset_train, dataset_test = dataset.load_dataset_paths(data_train_dir, data_te
 # dubios
 # correlations = features.get_correlations_matrix_for_each_images(dataset_train.filenames, img_height, img_width)
 
+# dubios 2
+# correlations = features.get_correlations_pixel_with_pixel(dataset_train.filenames, img_height, img_width)
+
 
 # ___________________________________________
 # PCA ANALYSIS

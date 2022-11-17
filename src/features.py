@@ -277,9 +277,37 @@ def get_correlations_matrix_for_each_images(filenames, img_height, img_width):
 
     return correlations
 
+def get_correlations_pixel_with_pixel(filenames, img_height, img_width):
+    correlations = []
+    helpers.progress(0, len(filenames))
+    images = []
+    for i, img_path in enumerate(filenames[0:300]):
+        img = dataset.load_img(img_path, False, True)
+        img_resize = resize(img, (img_height, img_width), anti_aliasing=True)
+        # get_correlation_for_img(img_resize)
+        images.append(img_resize)
+        helpers.progress(i, len(filenames), 'Correlation all pixels')
+
+    print(np.shape(images))
+    images = np.array(images)
+
+    for i in range(img_height):
+        for j in range(img_width):
+            rgb = images[:, i, j, :]
+            correlations.append(np.corrcoef(rgb))
+
+    for i in [5000, 5001, 5002, 6000]:
+        fig = plt.figure()
+        plt.matshow(correlations[i])
+        plt.colorbar()
+        plt.title('Correlation matrix for pixel ' + str(i))
+        plt.show()
+
+    return correlations
+
 def get_correlation_for_img(img):
     pixels = img.reshape(img.shape[0] * img.shape[1], img.shape[2])
-    # for pixel in pixels:
+
     corrcoef = np.corrcoef(pixels)
 
     return corrcoef
