@@ -1,5 +1,6 @@
 import src.dataset as dataset
 import src.features as features
+import src.pca as pca_file
 import numpy as np
 
 # ___________________________________________
@@ -25,7 +26,7 @@ dataset_train, dataset_test = dataset.load_dataset_paths(data_train_dir, data_te
 
 # train_features = features.get_features(dataset_train.filenames, img_height, img_width)
 
-#
+
 # features.plot_features(train_features[:, 0:3], 'Dataset mean', 'Mean', True, False)
 # features.plot_features(train_features[:, 3:6], 'Dataset variance', 'Variance', True, False)
 # features.plot_features(train_features[:, 6:9], 'Dataset train skewness', 'Skewness', False, True)
@@ -39,15 +40,17 @@ dataset_train, dataset_test = dataset.load_dataset_paths(data_train_dir, data_te
 # ___________________________________________
 
 # train_classes_features = features.get_features_classes(data_train_dir, img_height, img_width)
-#
+
 # features.plot_features_by_classes(train_classes_features[:, 0:3], 'Dataset mean by classes', 'Class Mean', True, False)
 # features.plot_features_by_classes(train_classes_features[:, 3:6], 'Dataset variance by classes', 'Class Variance', True, False)
 # features.plot_features_by_classes(train_classes_features[:, 6:9], 'Dataset train skewness by classes', 'Class Skewness', False, True)
 # features.plot_features_by_classes(train_classes_features[:, 9:12], 'Dataset train kurtosis by classes', 'Class Kurtosis', False, True)
 
+dataset_train_images = dataset.load_dataset(dataset_train.filenames, True, False, img_height, img_width)
+dataset_test_images = dataset.load_dataset(dataset_test.filenames, True, False, img_height, img_width)
+dataset_train_labels = dataset_train.target
+dataset_test_labels = dataset_test.target
 
-
-# dataset_train_images = dataset.load_dataset(dataset_train.filenames, True, False)
 # dataset.display_img_by_index(dataset_train_images, np.argmax(train_features[:, 0:3].sum(axis=1)), train_features[:, 0:3], 'Image with biggest mean', True, False)
 # dataset.display_img_by_index(dataset_train_images, np.argmin(train_features[:, 0:3].sum(axis=1)), train_features[:, 0:3], 'Image with smallest mean', True, False)
 # dataset.display_img_by_index(dataset_train_images, np.argmax(train_features[:, 3:6].sum(axis=1)), train_features[:, 3:6], 'Image with biggest var', True, False)
@@ -72,7 +75,24 @@ dataset_train, dataset_test = dataset.load_dataset_paths(data_train_dir, data_te
 # PCA ANALYSIS
 # ___________________________________________
 
+dataset_train_images_flatten = pca_file.flatten_dataset(dataset_train_images)
+dataset_test_images_flatten = pca_file.flatten_dataset(dataset_test_images)
 
+# choose components number
+n_components = 175
+
+# choose components number
+# pca_file.choose_pca_components(n_components, dataset_train_images_flatten)
+
+# fit
+pca = pca_file.fit_pca(n_components, dataset_train_images_flatten)
+
+# transform
+dataset_train_reduced, dataset_train_recovered, dataset_test_reduced, dataset_test_recovered = pca_file.trans_pca(pca, dataset_train_images_flatten, dataset_test_images_flatten)
+
+# show
+# pca_file.show_first_two_pca_components(dataset_train_reduced, dataset_train_labels)
+# pca_file.show_recovered_images(dataset_train_images_flatten, dataset_train_recovered, n_components, img_height, img_width)
 
 # ___________________________________________
 # SEARCH ENGINE

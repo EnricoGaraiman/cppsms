@@ -6,7 +6,7 @@ import os
 import glob
 import numpy as np
 from src.helpers import rgb2gray
-
+import src.helpers as helpers
 
 # -----------------------------------------------------------------------------
 # Load dataset paths
@@ -81,7 +81,7 @@ def dataset_distribution(data_train_dir):
 # -----------------------------------------------------------------------------
 # Load Image
 # -----------------------------------------------------------------------------
-def load_img(filename, grayscale, bbox=None):
+def load_img(filename, grayscale, bbox=None, img_height=False, img_width=False):
     img = plt.imread(filename)
 
     # if img.max() < 2: img = np.uint8(255 * img)
@@ -94,6 +94,9 @@ def load_img(filename, grayscale, bbox=None):
         y_min = int(text.split('<ymin>')[1].split('</ymin>')[0])
         y_max = int(text.split('<ymax>')[1].split('</ymax>')[0])
         img = img[y_min:y_max, x_min:x_max]
+
+    if img_width and img_height:
+        img = resize(img, (img_height, img_width), anti_aliasing=True)
 
     return img
 
@@ -116,9 +119,13 @@ def display_img_by_index(data, index, features, title, save=True, show=True):
 # -----------------------------------------------------------------------------
 # DISPLAY LOAD DATASET
 # -----------------------------------------------------------------------------
-def load_dataset(filenames, bbox=None, grayscale=False):
+def load_dataset(filenames, bbox=None, grayscale=False, img_height=False, img_width=False):
     images = []
-    for filename in filenames:
-        images.append(load_img(filename, grayscale, bbox))
+
+    helpers.progress(0, len(filenames))
+    for i, filename in enumerate(filenames):
+        img = load_img(filename, grayscale, bbox, img_height, img_width)
+        images.append(img)
+        helpers.progress(i, len(filenames), 'Dataset images')
 
     return images
