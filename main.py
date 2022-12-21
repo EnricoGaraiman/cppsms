@@ -95,6 +95,12 @@ dataset_train_reduced, dataset_train_recovered, dataset_test_reduced, dataset_te
 # pca_file.show_recovered_images(dataset_train_images_flatten, dataset_train_recovered, n_components, img_height, img_width)
 
 # ___________________________________________
+# CLASSIFICATION
+# ___________________________________________
+
+
+
+# ___________________________________________
 # SEARCH ENGINE
 # ___________________________________________
 # features.search_similar_image(train_features, dataset_train.filenames, dataset_test.filenames)
