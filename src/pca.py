@@ -124,7 +124,8 @@ def show_first_two_pca_components(dataset_train_reduced, y_train):
     c_map = plt.cm.get_cmap('jet', 120)
     scatter = plt.scatter(dataset_train_reduced[:, 0], dataset_train_reduced[:, 1], s = 10,
                 cmap = c_map, c=y_train)
-    plt.colorbar(scatter, ticks=range(0, 120), label='Class ID')
+    cbar = plt.colorbar(scatter, ticks=range(0, 120), label='Class ID')
+    cbar.ax.tick_params(labelsize=5)
     plt.xlabel('PC-1') , plt.ylabel('PC-2')
     # plt.show()
     plt.savefig('results/pc12.png')
