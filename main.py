@@ -2,6 +2,7 @@ import src.dataset as dataset
 import src.features as features
 import src.pca as pca_file
 import numpy as np
+import src.knn as knn
 
 # ___________________________________________
 # PARAMETERS
@@ -46,10 +47,10 @@ dataset_train, dataset_test = dataset.load_dataset_paths(data_train_dir, data_te
 # features.plot_features_by_classes(train_classes_features[:, 6:9], 'Dataset train skewness by classes', 'Class Skewness', False, True)
 # features.plot_features_by_classes(train_classes_features[:, 9:12], 'Dataset train kurtosis by classes', 'Class Kurtosis', False, True)
 
-dataset_train_images = dataset.load_dataset(dataset_train.filenames, True, False, img_height, img_width)
-dataset_test_images = dataset.load_dataset(dataset_test.filenames, True, False, img_height, img_width)
-dataset_train_labels = dataset_train.target
-dataset_test_labels = dataset_test.target
+dataset_train_images = dataset.load_dataset(dataset_train.filenames[0:175],  True, False, img_height, img_width)
+dataset_test_images = dataset.load_dataset(dataset_test.filenames[0:175], True, False, img_height, img_width)
+dataset_train_labels = dataset_train.target[0:175]
+dataset_test_labels = dataset_test.target[0:175]
 
 # dataset.display_img_by_index(dataset_train_images, np.argmax(train_features[:, 0:3].sum(axis=1)), train_features[:, 0:3], 'Image with biggest mean', True, False)
 # dataset.display_img_by_index(dataset_train_images, np.argmin(train_features[:, 0:3].sum(axis=1)), train_features[:, 0:3], 'Image with smallest mean', True, False)
@@ -97,6 +98,9 @@ dataset_train_reduced, dataset_train_recovered, dataset_test_reduced, dataset_te
 # ___________________________________________
 # CLASSIFICATION
 # ___________________________________________
+class_names = [cls.split('-')[-1] for cls in dataset_train.target_names ]
+
+knn.knn_classifier(dataset_train_reduced, dataset_train_labels, dataset_test_reduced, dataset_test_labels, len(class_names), class_names)
 
 
 
