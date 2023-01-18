@@ -7,6 +7,10 @@ import glob
 import numpy as np
 from src.helpers import rgb2gray
 import src.helpers as helpers
+from numpy import save, load
+# from rembg import remove
+import cv2
+
 
 # -----------------------------------------------------------------------------
 # Load dataset paths
@@ -25,13 +29,14 @@ def load_dataset_paths(data_train_dir, data_test_dir):
     )
 
     class_names = dataset_train.target_names
+    classes = [cls.split('-')[-1] for cls in class_names]
     print('Class number: ', len(class_names))
     print('Classes: ')
-    print([cls.split('-')[-1] for cls in class_names])
+    print(classes)
     print('Train images: ', len(dataset_train.filenames))
     print('Test images: ', len(dataset_test.filenames))
 
-    return dataset_train, dataset_test
+    return dataset_train, dataset_test, classes
 
 
 # -----------------------------------------------------------------------------
@@ -43,7 +48,7 @@ def dataset_examples_each_class(data_train_dir, img_height, img_width, show=True
         for index, class_dir in enumerate(glob.glob(data_train_dir + '/*')[interval[0]: interval[1]]):
             plt.subplot(6, 10, index + 1)
             # img = io.imread(glob.glob(class_dir + '/*')[4])
-            img = load_img(glob.glob(class_dir + '/*')[4], False, True)
+            img = load_img(glob.glob(class_dir + '/*')[4], False, False)
             # img_resize = resize(img, (img_height, img_width), anti_aliasing=True)
             plt.imshow(img, cmap='gray')
             plt.title((class_dir.split('\\')[-1]).split('-')[-1])
@@ -81,8 +86,9 @@ def dataset_distribution(data_train_dir):
 # -----------------------------------------------------------------------------
 # Load Image
 # -----------------------------------------------------------------------------
-def load_img(filename, grayscale, bbox=None, img_height=False, img_width=False):
-    img = plt.imread(filename)
+def load_img(filename, grayscale, bbox=None, img_height=False, img_width=False, remove_bg=False, type = ''):
+    img = cv2.imread(filename)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     # if img.max() < 2: img = np.uint8(255 * img)
     if grayscale: img = rgb2gray(img)
@@ -94,6 +100,13 @@ def load_img(filename, grayscale, bbox=None, img_height=False, img_width=False):
         y_min = int(text.split('<ymin>')[1].split('</ymin>')[0])
         y_max = int(text.split('<ymax>')[1].split('</ymax>')[0])
         img = img[y_min:y_max, x_min:x_max]
+
+    # if remove_bg:
+    #     img = remove(img)
+    #     if not os.path.isdir(r'stanfordDogsDataset/split_images_crop_no_bg/' + type + '/' + (filename.split('\\', 1)[-1].replace('.jpg', '').replace('\\', '/')).rsplit('/', 1)[0]):
+    #         os.mkdir(r'stanfordDogsDataset/split_images_crop_no_bg/' + type + '/' + (filename.split('\\', 1)[-1].replace('.jpg', '').replace('\\', '/')).rsplit('/', 1)[0])
+    #
+    #     cv2.imwrite(r'stanfordDogsDataset/split_images_crop_no_bg/' + type + '/' + (filename.split('\\', 1)[-1].replace('.jpg', '').replace('\\', '/')).rsplit('/', 1)[0] + '/' + filename.rsplit('\\', 1)[-1], cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
 
     if img_width and img_height:
         img = resize(img, (img_height, img_width), anti_aliasing=True)
@@ -119,13 +132,27 @@ def display_img_by_index(data, index, features, title, save=True, show=True):
 # -----------------------------------------------------------------------------
 # DISPLAY LOAD DATASET
 # -----------------------------------------------------------------------------
-def load_dataset(filenames, bbox=None, grayscale=False, img_height=False, img_width=False):
+def load_dataset(filenames, bbox=None, grayscale=False, img_height=False, img_width=False, remove_bg=False, type = ''):
     images = []
 
     helpers.progress(0, len(filenames))
     for i, filename in enumerate(filenames):
-        img = load_img(filename, grayscale, bbox, img_height, img_width)
+        img = load_img(filename, grayscale, bbox, img_height, img_width, remove_bg, type)
         images.append(img)
         helpers.progress(i, len(filenames), 'Dataset images')
 
     return images
+
+
+def save_features(features, featuresName):
+    for i, feature in enumerate(features):
+        save('results/features/' + featuresName[i] + '.npy', feature)
+
+
+def load_features():
+    dataset_train_reduced = load('results/features/dataset_train_reduced.npy')
+    dataset_train_recovered = load('results/features/dataset_train_recovered.npy')
+    dataset_test_reduced = load('results/features/dataset_test_reduced.npy')
+    dataset_test_recovered = load('results/features/dataset_test_recovered.npy')
+
+    return dataset_train_reduced, dataset_train_recovered, dataset_test_reduced, dataset_test_recovered

@@ -17,7 +17,7 @@ def get_features(filenames, img_height=None, img_width=None, progress=True):
     if progress:
         helpers.progress(0, len(filenames))
     for i, img_path in enumerate(filenames):
-        img = dataset.load_img(img_path, False, True)
+        img = dataset.load_img(img_path, False, False)
         img_features = []
         # img_resize = resize(img, (img_height, img_width), anti_aliasing=True)
 
@@ -205,88 +205,88 @@ def plot_moments_hu(features, title, name_of_feature, save=True, show=True):
         fig.savefig('results/' + title + '.jpg')
 
 
-def get_correlation_matrix(filenames, img_height, img_width):
+def get_covariance_matrix(filenames, img_height, img_width):
     images = []
     helpers.progress(0, len(filenames))
     for i, img_path in enumerate(filenames):
         img = dataset.load_img(img_path, False, True)
         img_resize = resize(img, (img_height, img_width), anti_aliasing=True)
-        # get_correlation_for_img(img_resize)
+        # get_covariance_for_img(img_resize)
         images.append(img_resize.reshape(img_resize.shape[0] * img_resize.shape[1] * img_resize.shape[2]))
-        helpers.progress(i, len(filenames), 'Correlation')
+        helpers.progress(i, len(filenames), 'covariance')
 
-    correlation = np.corrcoef(images)
+    covariance = np.cov(images)
     # fig = plt.figure()
-    # plt.matshow(correlation)
+    # plt.matshow(covariance)
     # plt.show()
 
-    return correlation
+    return covariance
 
 
-def view_images_with_max_correlation(correlation_matrix, filenames, img_height, img_width):
-    for index_row, row in enumerate(correlation_matrix):
+def view_images_with_max_covariance(covariance_matrix, filenames, img_height, img_width):
+    for index_row, row in enumerate(covariance_matrix):
         max_v = 0
         min_v = 0
-        most_correlated_img_index = -1
-        most_uncorrelated_img_index = -1
+        most_covarianted_img_index = -1
+        most_uncovarianted_img_index = -1
         for index, coef in enumerate(row):
             if max_v < coef < 1.0:
                 max_v = coef
-                most_correlated_img_index = index
+                most_covarianted_img_index = index
             if -1.0 < coef < min_v:
                 min_v = coef
-                most_uncorrelated_img_index = index
+                most_uncovarianted_img_index = index
 
         # view img
-        img = dataset.load_img(filenames[index_row], False, True)
+        img = dataset.load_img(filenames[index_row], False, False)
         img = resize(img, (img_height, img_width), anti_aliasing=True)
 
-        img_correlated = dataset.load_img(filenames[most_correlated_img_index], False, True)
-        img_correlated = resize(img_correlated, (img_height, img_width), anti_aliasing=True)
+        img_covarianted = dataset.load_img(filenames[most_covarianted_img_index], False, False)
+        img_covarianted = resize(img_covarianted, (img_height, img_width), anti_aliasing=True)
 
-        img_uncorrelated = dataset.load_img(filenames[most_uncorrelated_img_index], False, True)
-        img_uncorrelated = resize(img_uncorrelated, (img_height, img_width), anti_aliasing=True)
+        img_uncovarianted = dataset.load_img(filenames[most_uncovarianted_img_index], False, False)
+        img_uncovarianted = resize(img_uncovarianted, (img_height, img_width), anti_aliasing=True)
 
         _, axarr = plt.subplots(1, 3, figsize=(9, 3))
         axarr[0].imshow(img)
         axarr[0].set_title('Image')
-        axarr[1].imshow(img_correlated)
-        axarr[1].set_title('Most correlated image\n (coef = ' + str(round(max_v, 2)) + ')')
-        axarr[2].imshow(img_uncorrelated)
-        axarr[2].set_title('Most uncorrelated image\n (coef = ' + str(round(min_v, 2)) + ')')
+        axarr[1].imshow(img_covarianted)
+        axarr[1].set_title('Most covarianted image\n (coef = ' + str(round(max_v, 2)) + ')')
+        axarr[2].imshow(img_uncovarianted)
+        axarr[2].set_title('Most uncovarianted image\n (coef = ' + str(round(min_v, 2)) + ')')
         plt.show()
 
-def get_correlations_matrix_for_each_images(filenames, img_height, img_width):
-    correlations = []
+def get_covariances_matrix_for_each_images(filenames, img_height, img_width):
+    covariances = []
     helpers.progress(0, len(filenames))
     for i, img_path in enumerate(filenames[13:20]):
-        img = dataset.load_img(img_path, False, True)
+        img = dataset.load_img(img_path, False, False)
         img_resize = resize(img, (img_height, img_width), anti_aliasing=True)
-        corr = get_correlation_for_img(img_resize)
-        correlations.append(corr)
+        covv = get_covariance_for_img(img_resize)
+        covariances.append(covv)
 
-        _, axarr = plt.subplots(1, 2, figsize=(9, 6))
-        axarr[0].imshow(img_resize)
-        axarr[0].set_title('Image')
-        pcm = axarr[1].matshow(corr)
-        plt.colorbar(pcm, ax=axarr[1])
-        axarr[1].set_title('Correlation matrix (for pixels)')
-        plt.show()
+        # _, axarr = plt.subplots(1, 2, figsize=(9, 6))
+        # axarr[0].imshow(img_resize)
+        # axarr[0].set_title('Image')
+        # pcm = axarr[1].matshow(covv)
+        # plt.colorbar(pcm, ax=axarr[1])
+        # axarr[1].set_title('covariance matrix (for pixels)')
+        # plt.show()
 
-        helpers.progress(i, len(filenames), 'Correlation')
+        helpers.progress(i, len(filenames), 'covariance')
 
-    return correlations
+    return covariances
 
-def get_correlations_pixel_with_pixel(filenames, img_height, img_width):
-    correlations = []
+def get_covariances_pixel_with_pixel(filenames, img_height, img_width):
+    covariances = []
     helpers.progress(0, len(filenames))
     images = []
     for i, img_path in enumerate(filenames[0:300]):
-        img = dataset.load_img(img_path, False, True)
+        img = dataset.load_img(img_path, False, False)
         img_resize = resize(img, (img_height, img_width), anti_aliasing=True)
-        # get_correlation_for_img(img_resize)
+        # get_covariance_for_img(img_resize)
         images.append(img_resize)
-        helpers.progress(i, len(filenames), 'Correlation all pixels')
+        helpers.progress(i, len(filenames), 'covariance all pixels')
 
     print(np.shape(images))
     images = np.array(images)
@@ -294,29 +294,29 @@ def get_correlations_pixel_with_pixel(filenames, img_height, img_width):
     for i in range(img_height):
         for j in range(img_width):
             rgb = images[:, i, j, :]
-            correlations.append(np.corrcoef(rgb))
+            covariances.append(np.cov(rgb))
 
     for i in [5000, 5001, 5002, 6000]:
         fig = plt.figure()
-        plt.matshow(correlations[i])
+        plt.matshow(covariances[i])
         plt.colorbar()
-        plt.title('Correlation matrix for pixel ' + str(i))
+        plt.title('covariance matrix for pixel ' + str(i))
         plt.show()
 
-    return correlations
+    return covariances
 
-def get_correlation_for_img(img):
+def get_covariance_for_img(img):
     pixels = img.reshape(img.shape[0] * img.shape[1], img.shape[2])
 
-    corrcoef = np.corrcoef(pixels)
+    cov = np.cov(pixels)
 
-    return corrcoef
+    return cov
 
 def search_similar_image(features, train_filenames, test_filenames):
     for index1, filename in enumerate(test_filenames):
         min = 999999999999999999
         argmin = 0
-        img = dataset.load_img(filename, False, True)
+        img = dataset.load_img(filename, False, False)
 
         enc1 = get_features([filename])
 
@@ -326,7 +326,7 @@ def search_similar_image(features, train_filenames, test_filenames):
                 argmin = index2
                 min = loss
 
-        img_sim = dataset.load_img(train_filenames[argmin], False, True)
+        img_sim = dataset.load_img(train_filenames[argmin], False, False)
 
         _, axarr = plt.subplots(1, 2)
         axarr[0].imshow(img)

@@ -3,108 +3,143 @@ import src.features as features
 import src.pca as pca_file
 import numpy as np
 import src.knn as knn
+import src.bovw as bovw
+import random
 
 # ___________________________________________
 # PARAMETERS
 # ___________________________________________
 
-data_train_dir = 'stanfordDogsDataset/split_images/train'
-data_test_dir = 'stanfordDogsDataset/split_images/test'
+data_train_dir = 'stanfordDogsDataset/split_images_small2/train'
+data_test_dir = 'stanfordDogsDataset/split_images_small2/test'
 img_height = 128
 img_width = 128
+redo_features = True
 
 # ___________________________________________
 # DATASET
 # ___________________________________________
 
-dataset_train, dataset_test = dataset.load_dataset_paths(data_train_dir, data_test_dir)
+dataset_train, dataset_test, class_names = dataset.load_dataset_paths(data_train_dir, data_test_dir)
 # dataset.dataset_examples_each_class(data_train_dir, img_height, img_width, True)
 # dataset.dataset_distribution(data_train_dir)
 
-# ___________________________________________
-# FEATURES ALL DATASET
-# ___________________________________________
+dataset_train_labels = dataset_train.target
+dataset_test_labels = dataset_test.target
 
-# train_features = features.get_features(dataset_train.filenames, img_height, img_width)
+if redo_features:
+   # ___________________________________________
+    # FEATURES ALL DATASET
+    # ___________________________________________
 
+    # train_features = features.get_features(dataset_train.filenames, img_height, img_width)
+    # test_features = features.get_features(dataset_test.filenames, img_height, img_width)
 
-# features.plot_features(train_features[:, 0:3], 'Dataset mean', 'Mean', True, False)
-# features.plot_features(train_features[:, 3:6], 'Dataset variance', 'Variance', True, False)
-# features.plot_features(train_features[:, 6:9], 'Dataset train skewness', 'Skewness', False, True)
-# features.plot_features(train_features[:, 9:12], 'Dataset train kurtosis', 'Kurtosis', False, True)
-# features.plot_moments_hu(train_features[:, 6:13], 'Dataset moments hu', 'Moments hu', True, False)
+    # features.plot_features(train_features[:, 0:3], 'Dataset mean', 'Mean', True, False)
+    # features.plot_features(train_features[:, 3:6], 'Dataset variance', 'Variance', True, False)
+    # features.plot_features(train_features[:, 6:9], 'Dataset train skewness', 'Skewness', False, True)
+    # features.plot_features(train_features[:, 9:12], 'Dataset train kurtosis', 'Kurtosis', False, True)
+    # features.plot_moments_hu(train_features[:, 6:13], 'Dataset moments hu', 'Moments hu', True, False)
 
+    # ___________________________________________
+    # FEATURES BY CLASSES (USE FOR PLOT REPRESENTATION)
+    # ___________________________________________
 
+    # train_classes_features = features.get_features_classes(data_train_dir, img_height, img_width)
 
-# ___________________________________________
-# FEATURES BY CLASSES (USE FOR PLOT REPRESENTATION)
-# ___________________________________________
+    # features.plot_features_by_classes(train_classes_features[:, 0:3], 'Dataset mean by classes', 'Class Mean', True, False)
+    # features.plot_features_by_classes(train_classes_features[:, 3:6], 'Dataset variance by classes', 'Class Variance', True, False)
+    # features.plot_features_by_classes(train_classes_features[:, 6:9], 'Dataset train skewness by classes', 'Class Skewness', False, True)
+    # features.plot_features_by_classes(train_classes_features[:, 9:12], 'Dataset train kurtosis by classes', 'Class Kurtosis', False, True)
 
-# train_classes_features = features.get_features_classes(data_train_dir, img_height, img_width)
+    dataset_train_images = dataset.load_dataset(dataset_train.filenames,  False, False, img_height, img_width)
+    # dataset_test_images = dataset.load_dataset(dataset_test.filenames, False, False, img_height, img_width)
 
-# features.plot_features_by_classes(train_classes_features[:, 0:3], 'Dataset mean by classes', 'Class Mean', True, False)
-# features.plot_features_by_classes(train_classes_features[:, 3:6], 'Dataset variance by classes', 'Class Variance', True, False)
-# features.plot_features_by_classes(train_classes_features[:, 6:9], 'Dataset train skewness by classes', 'Class Skewness', False, True)
-# features.plot_features_by_classes(train_classes_features[:, 9:12], 'Dataset train kurtosis by classes', 'Class Kurtosis', False, True)
+    # dataset.display_img_by_index(dataset_train_images, np.argmax(train_features[:, 0:3].sum(axis=1)), train_features[:, 0:3], 'Image with biggest mean', True, False)
+    # dataset.display_img_by_index(dataset_train_images, np.argmin(train_features[:, 0:3].sum(axis=1)), train_features[:, 0:3], 'Image with smallest mean', True, False)
+    # dataset.display_img_by_index(dataset_train_images, np.argmax(train_features[:, 3:6].sum(axis=1)), train_features[:, 3:6], 'Image with biggest var', True, False)
+    # dataset.display_img_by_index(dataset_train_images, np.argmin(train_features[:, 3:6].sum(axis=1)), train_features[:, 3:6], 'Image with smallest var', True, False)
 
-dataset_train_images = dataset.load_dataset(dataset_train.filenames[0:175],  True, False, img_height, img_width)
-dataset_test_images = dataset.load_dataset(dataset_test.filenames[0:175], True, False, img_height, img_width)
-dataset_train_labels = dataset_train.target[0:175]
-dataset_test_labels = dataset_test.target[0:175]
+    # ___________________________________________
+    # COVARIATION ANALYSIS
+    # ___________________________________________
 
-# dataset.display_img_by_index(dataset_train_images, np.argmax(train_features[:, 0:3].sum(axis=1)), train_features[:, 0:3], 'Image with biggest mean', True, False)
-# dataset.display_img_by_index(dataset_train_images, np.argmin(train_features[:, 0:3].sum(axis=1)), train_features[:, 0:3], 'Image with smallest mean', True, False)
-# dataset.display_img_by_index(dataset_train_images, np.argmax(train_features[:, 3:6].sum(axis=1)), train_features[:, 3:6], 'Image with biggest var', True, False)
-# dataset.display_img_by_index(dataset_train_images, np.argmin(train_features[:, 3:6].sum(axis=1)), train_features[:, 3:6], 'Image with smallest var', True, False)
+    # covariation_matrix = features.get_covariation_matrix(dataset_train.filenames, img_height, img_width)
+    # features.view_images_with_max_covariation(covariation_matrix, dataset_train.filenames, img_height, img_width)
 
+    # dubios
+    # covariances_train = features.get_covariances_matrix_for_each_images(dataset_train.filenames, img_height, img_width)
+    # covariances_test = features.get_covariances_matrix_for_each_images(dataset_test.filenames, img_height, img_width)
 
+    # dubios 2
+    # covariances_train = features.get_covariances_pixel_with_pixel(dataset_train.filenames, img_height, img_width)
 
-# ___________________________________________
-# CORRELATION ANALYSIS
-# ___________________________________________
-# correlation_matrix = features.get_correlation_matrix(dataset_train.filenames, img_height, img_width)
-# features.view_images_with_max_correlation(correlation_matrix, dataset_train.filenames, img_height, img_width)
+    # ___________________________________________
+    # BAG OF VISUAL WORDS
+    # ___________________________________________
+    search_imgs = random.sample(range(0, len(dataset_train_images)), 50)
 
-# dubios
-# correlations = features.get_correlations_matrix_for_each_images(dataset_train.filenames, img_height, img_width)
+    keywords_train, descriptors_train = bovw.extract_descriptors(dataset_train_images, 'ORB')
+    tfidf_train, frequency_vectors_train = bovw.extract_bovw(keywords_train, descriptors_train, len(dataset_train_images))
 
-# dubios 2
-# correlations = features.get_correlations_pixel_with_pixel(dataset_train.filenames, img_height, img_width)
+    # save features on disk
+    dataset.save_features([tfidf_train], ['tfidf_train'])
 
+    # get similar images
+    bovw.get_similar_images(tfidf_train, dataset_train_images, search_imgs, True, True)
 
-# ___________________________________________
-# PCA ANALYSIS
-# ___________________________________________
-
-dataset_train_images_flatten = pca_file.flatten_dataset(dataset_train_images)
-dataset_test_images_flatten = pca_file.flatten_dataset(dataset_test_images)
-
-# choose components number
-n_components = 175
-
-# choose components number
-# pca_file.choose_pca_components(n_components, dataset_train_images_flatten)
-
-# fit
-pca = pca_file.fit_pca(n_components, dataset_train_images_flatten)
-
-# transform
-dataset_train_reduced, dataset_train_recovered, dataset_test_reduced, dataset_test_recovered = pca_file.trans_pca(pca, dataset_train_images_flatten, dataset_test_images_flatten)
-
-# show
-# pca_file.show_first_two_pca_components(dataset_train_reduced, dataset_train_labels)
-# pca_file.show_recovered_images(dataset_train_images_flatten, dataset_train_recovered, n_components, img_height, img_width)
+# # ___________________________________________
+    # # PCA ANALYSIS
+    # # ___________________________________________
+    #
+    # dataset_train_images_flatten = pca_file.flatten_dataset(dataset_train_images)
+    # dataset_test_images_flatten = pca_file.flatten_dataset(dataset_test_images)
+    #
+    # # choose components number
+    # n_components = 175
+    #
+    # # choose components number
+    # # pca_file.choose_pca_components(n_components, dataset_train_images_flatten)
+    #
+    # # fit
+    # pca = pca_file.fit_pca(n_components, dataset_train_images_flatten)
+    #
+    # # transform
+    # dataset_train_reduced, dataset_train_recovered, dataset_test_reduced, dataset_test_recovered = pca_file.trans_pca(pca, dataset_train_images_flatten, dataset_test_images_flatten)
+    #
+    # # show
+    # # pca_file.show_first_two_pca_components(dataset_train_reduced, dataset_train_labels)
+    # # pca_file.show_recovered_images(dataset_train_images_flatten, dataset_train_recovered, n_components, img_height, img_width)
+    #
+    # # save features on disk
+    # dataset.save_features([dataset_train_reduced, dataset_train_recovered, dataset_test_reduced, dataset_test_recovered], ['dataset_train_reduced', 'dataset_train_recovered', 'dataset_test_reduced', 'dataset_test_recovered'])
+else:
+    # load features from disk
+    print('Start load features from disk')
+    dataset_train_reduced, dataset_train_recovered, dataset_test_reduced, dataset_test_recovered = dataset.load_features()
+    print('Loaded features from disk')
 
 # ___________________________________________
 # CLASSIFICATION
 # ___________________________________________
-class_names = [cls.split('-')[-1] for cls in dataset_train.target_names ]
 
-knn.knn_classifier(dataset_train_reduced, dataset_train_labels, dataset_test_reduced, dataset_test_labels, len(class_names), class_names)
+# standardize data
+dataset_train_reduced_standardize = dataset_train_reduced.copy()
+dataset_test_reduced_standardize = dataset_test_reduced.copy()
+dataset_train_reduced_standardize = (dataset_train_reduced_standardize - np.mean(dataset_train_reduced_standardize)) / np.std(dataset_train_reduced_standardize)
+dataset_test_reduced_standardize = (dataset_test_reduced_standardize - np.mean(dataset_test_reduced_standardize)) / np.std(dataset_test_reduced_standardize)
 
+# normalize data
+dataset_train_reduced_norm = dataset_train_reduced_standardize.copy()
+dataset_test_reduced_norm = dataset_test_reduced_standardize.copy()
+dataset_train_reduced_norm /= np.max(np.abs(dataset_train_reduced_norm))
+dataset_test_reduced_norm /= np.max(np.abs(dataset_test_reduced_norm))
+
+knn.knn_classifier(dataset_train_reduced_norm, dataset_train_labels, dataset_test_reduced_norm, dataset_test_labels, class_names)
 
 
 # ___________________________________________
 # SEARCH ENGINE
 # ___________________________________________
+
 # features.search_similar_image(train_features, dataset_train.filenames, dataset_test.filenames)
