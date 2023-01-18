@@ -14,6 +14,9 @@ def progress(count, total, suffix=''):
 
     sys.stdout.write('[%s] %s%s | %s\r' % (bar, percents, '%', suffix))
 
+    if count == total:
+        print()
+
 
 rgb2gray = lambda img: np.uint8(0.299 * img[:,:,0] + 0.587 * img[:,:,1] + 0.144 * img[:, :, 2])
 

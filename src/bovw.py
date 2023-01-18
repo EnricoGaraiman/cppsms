@@ -14,6 +14,7 @@ def extract_descriptors(dataset_images, type='SIFT'):
 
     keypoints = []
     descriptors = []
+    index_img_with_no_descriptors = []
 
     helpers.progress(0, len(dataset_images))
     for i, img in enumerate(dataset_images):
@@ -25,9 +26,13 @@ def extract_descriptors(dataset_images, type='SIFT'):
             img_keypoints = extractor.detect(img,None)
             # compute the descriptors with ORB
             img_keypoints, img_descriptors = extractor.compute(img, img_keypoints)
-        keypoints.append(img_keypoints)
-        descriptors.append(img_descriptors.astype('float'))
+        if np.any(img_descriptors) is None:
+            index_img_with_no_descriptors.append(i)
+        else:
+            keypoints.append(img_keypoints)
+            descriptors.append(img_descriptors.astype('float'))
         helpers.progress(i, len(dataset_images), type + ' descriptors')
+    # print(type + ' descriptors done')
 
     # output_image = []
     # for x in range(3):
@@ -37,9 +42,9 @@ def extract_descriptors(dataset_images, type='SIFT'):
     #     plt.imshow(output_image[x], cmap='gray')
     #     plt.show()
 
-    return keypoints, descriptors
+    return keypoints, descriptors, index_img_with_no_descriptors
 
-def extract_bovw(keypoints, descriptors, number_of_images):
+def extract_bovw(descriptors, number_of_images, dataset_images = None):
 
     # compute Kmeans
     all_descriptors = []
@@ -48,19 +53,29 @@ def extract_bovw(keypoints, descriptors, number_of_images):
             all_descriptors.append(descriptor)
     all_descriptors = np.stack(all_descriptors)
 
-    k = 120
-    codebook, variance = kmeans(all_descriptors, k)
+    k = 200
+    codebook, variance = kmeans(all_descriptors, k, 5)
 
     visual_words = []
+    im_features = np.zeros((len(descriptors), k), "float32")
     helpers.progress(0, len(descriptors))
     for i, img_descriptors in enumerate(descriptors):
+        print(np.shape(img_descriptors))
+        print(np.shape(img_descriptors[1]))
         img_visual_words, distance = vq(img_descriptors, codebook)
+        print(np.shape(img_visual_words))
         visual_words.append(img_visual_words)
+        for w in img_visual_words:
+            print(np.shape(w), 'da')
+            im_features[i][w] += 1
+        if dataset_images:
+            plt.imshow(dataset_images[1])
+            plt.show()
         helpers.progress(i, len(descriptors), 'BOW')
 
     tfidf, frequency_vectors = get_frequency_vector(visual_words, k, number_of_images)
 
-    return tfidf, frequency_vectors
+    return tfidf, frequency_vectors, im_features
 
 def get_frequency_vector(visual_words, k, number_of_images):
     frequency_vectors = []

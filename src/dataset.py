@@ -86,7 +86,7 @@ def dataset_distribution(data_train_dir):
 # -----------------------------------------------------------------------------
 # Load Image
 # -----------------------------------------------------------------------------
-def load_img(filename, grayscale, bbox=None, img_height=False, img_width=False, remove_bg=False, type = ''):
+def load_img(filename, grayscale, bbox=None, img_height=False, img_width=False, remove_bg=False, type=''):
     img = cv2.imread(filename)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
@@ -132,7 +132,7 @@ def display_img_by_index(data, index, features, title, save=True, show=True):
 # -----------------------------------------------------------------------------
 # DISPLAY LOAD DATASET
 # -----------------------------------------------------------------------------
-def load_dataset(filenames, bbox=None, grayscale=False, img_height=False, img_width=False, remove_bg=False, type = ''):
+def load_dataset(filenames, bbox=None, grayscale=False, img_height=False, img_width=False, remove_bg=False, type=''):
     images = []
 
     helpers.progress(0, len(filenames))
@@ -149,10 +149,21 @@ def save_features(features, featuresName):
         save('results/features/' + featuresName[i] + '.npy', feature)
 
 
-def load_features():
-    dataset_train_reduced = load('results/features/dataset_train_reduced.npy')
-    dataset_train_recovered = load('results/features/dataset_train_recovered.npy')
-    dataset_test_reduced = load('results/features/dataset_test_reduced.npy')
-    dataset_test_recovered = load('results/features/dataset_test_recovered.npy')
+def load_features_train():
+    tfidf_train = load('results/features/tfidf_train.npy')
+    descriptors_train = load('results/features/descriptors_train.npy', allow_pickle=True)
+    frequency_vectors_train = load('results/features/frequency_vectors_train.npy')
+    dataset_train_labels = load('results/features/dataset_train_labels.npy')
+    features_train = [] #load('results/features/features_train.npy')
 
-    return dataset_train_reduced, dataset_train_recovered, dataset_test_reduced, dataset_test_recovered
+    return tfidf_train, descriptors_train, frequency_vectors_train, dataset_train_labels, features_train
+
+
+def load_features_test():
+    tfidf_test = load('results/features/tfidf_test.npy')
+    descriptors_test = load('results/features/descriptors_test.npy', allow_pickle=True)
+    frequency_vectors_test = load('results/features/frequency_vectors_test.npy')
+    dataset_test_labels = load('results/features/dataset_test_labels.npy')
+    features_test = [] #load('results/features/features_test.npy')
+
+    return tfidf_test, descriptors_test, frequency_vectors_test, dataset_test_labels, features_test
