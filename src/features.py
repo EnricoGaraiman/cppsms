@@ -10,9 +10,19 @@ import glob
 import src.dataset as dataset
 import skimage.measure as measure
 import math as math
-
+import random
 
 def get_features(filenames, img_height=None, img_width=None, progress=True):
+    """
+         The function get all features from statistics
+
+         @param filenames:
+         @param img_height:
+         @param img_width:
+         @param progress:
+         @return:
+            features
+    """
     features = []
     if progress:
         helpers.progress(0, len(filenames))
@@ -43,7 +53,7 @@ def get_features(filenames, img_height=None, img_width=None, progress=True):
         img_features.extend(hu_log)
 
         # graycomatrix
-        for prop in getGrayComatrixFeatures(img):
+        for prop in get_gray_comatrix_features(img):
             for p in prop:
                 img_features.extend(p)
 
@@ -63,7 +73,17 @@ def get_features(filenames, img_height=None, img_width=None, progress=True):
     return np.array(features, dtype=object)
 
 
-def getGrayComatrixFeatures(img):
+def get_gray_comatrix_features(img):
+    """
+         The function find features from gray comatrix
+
+         @param filenames:
+         @param img_height:
+         @param img_width:
+         @param progress:
+         @return:
+            features
+    """
     img = helpers.rgb2gray(img)
     bins = list(range(10, 265, 10))
     img_digitized = np.digitize(img, bins)
@@ -77,6 +97,15 @@ def getGrayComatrixFeatures(img):
 
 
 def plot_features(features, title, name_of_feature, save=True, show=True):
+    """
+         The function plot features
+
+         @param features:
+         @param title:
+         @param name_of_feature:
+         @param save:
+         @param show:
+    """
     fig = plt.figure()
     plt.title(title)
 
@@ -102,6 +131,15 @@ def plot_features(features, title, name_of_feature, save=True, show=True):
 
 
 def get_features_classes(data_train_dir, img_height, img_width):
+    """
+         The function return features by classes
+
+         @param data_train_dir:
+         @param img_height:
+         @param img_width:
+         @return:
+            features
+    """
     all_classes_directory = glob.glob(data_train_dir + '/*')
     features = []
     helpers.progress(0, len(all_classes_directory))
@@ -138,6 +176,15 @@ def get_features_classes(data_train_dir, img_height, img_width):
 
 
 def plot_features_by_classes(features, title, name_of_feature, save=True, show=True):
+    """
+         The function plot features by classes
+
+         @param features:
+         @param title:
+         @param name_of_feature:
+         @param save:
+         @param show:
+    """
     r = features[:, 0]
     g = features[:, 1]
     b = features[:, 2]
@@ -160,6 +207,13 @@ def plot_features_by_classes(features, title, name_of_feature, save=True, show=T
 
 
 def rescale_moments_hu(hu):
+    """
+         The function rescale moments hu
+
+         @param hu:
+         @return:
+            rescale_hu
+    """
     rescale_hu = []
     for h in hu:
         rescale_hu.append(-1 * math.copysign(1.0, h) * math.log10(abs(h)))
@@ -168,6 +222,15 @@ def rescale_moments_hu(hu):
 
 
 def plot_moments_hu(features, title, name_of_feature, save=True, show=True):
+    """
+         The function plot moments hu
+
+         @param features:
+         @param title:
+         @param name_of_feature:
+         @param save:
+         @param show:
+    """
     fig = plt.figure()
     plt.title(title)
 
@@ -205,58 +268,103 @@ def plot_moments_hu(features, title, name_of_feature, save=True, show=True):
         fig.savefig('results/' + title + '.jpg')
 
 
-def get_covariance_matrix(filenames, img_height, img_width):
+def get_covariance_matrix(filenames, img_height, img_width, bbox = False):
+    """
+         The function return covariance matrix
+
+         @param filenames:
+         @param img_height:
+         @param img_width:
+         @param bbox:
+         @return:
+            covariance
+    """
     images = []
     helpers.progress(0, len(filenames))
     for i, img_path in enumerate(filenames):
-        img = dataset.load_img(img_path, False, True)
+        img = dataset.load_img(img_path, False, bbox)
         img_resize = resize(img, (img_height, img_width), anti_aliasing=True)
         # get_covariance_for_img(img_resize)
         images.append(img_resize.reshape(img_resize.shape[0] * img_resize.shape[1] * img_resize.shape[2]))
-        helpers.progress(i, len(filenames), 'covariance')
+        helpers.progress(i + 1, len(filenames), 'Covariance matrix images')
+    print()
 
-    covariance = np.cov(images)
-    # fig = plt.figure()
-    # plt.matshow(covariance)
-    # plt.show()
+    covariance = [[0 for col in range(len(images))] for row in range(len(images))]
+    helpers.progress(0, len(filenames))
+    for i, img1 in enumerate(images):
+        for j, img2 in enumerate(images):
+            covariance[i][j] = get_covariance(img1, img2)
+        helpers.progress(i + 1, len(images), 'Covariance matrix')
+
+    fig = plt.figure()
+    plt.matshow(covariance)
+    plt.show()
+    plt.clf()
 
     return covariance
 
 
+def get_covariance(x, y):
+    """
+         The function compute covariance matrix between two random variables
+
+         @param x:
+         @param y:
+         @return:
+            covariance
+    """
+    xbar, ybar = x.mean(), y.mean()
+    return np.sum((x - xbar) * (y - ybar)) / (len(x) - 1)
+
+
 def view_images_with_max_covariance(covariance_matrix, filenames, img_height, img_width):
+    """
+         The function plot images with max covariance
+
+         @param covariance_matrix:
+         @param filenames:
+         @param img_height:
+         @param img_width:
+    """
     for index_row, row in enumerate(covariance_matrix):
-        max_v = 0
-        min_v = 0
-        most_covarianted_img_index = -1
-        most_uncovarianted_img_index = -1
-        for index, coef in enumerate(row):
-            if max_v < coef < 1.0:
-                max_v = coef
-                most_covarianted_img_index = index
-            if -1.0 < coef < min_v:
-                min_v = coef
-                most_uncovarianted_img_index = index
+        most_covarianted_img_index = np.where(row == np.sort(row)[-2])[0][0]  # except actual image
+        most_uncovarianted_img_index = np.argmin(row)
 
-        # view img
-        img = dataset.load_img(filenames[index_row], False, False)
-        img = resize(img, (img_height, img_width), anti_aliasing=True)
+        if index_row in random.sample(range(0, len(filenames)), 50):
+            # view img
+            img = dataset.load_img(filenames[index_row], False, False)
+            img = resize(img, (img_height, img_width), anti_aliasing=True)
 
-        img_covarianted = dataset.load_img(filenames[most_covarianted_img_index], False, False)
-        img_covarianted = resize(img_covarianted, (img_height, img_width), anti_aliasing=True)
+            img_covarianted = dataset.load_img(filenames[most_covarianted_img_index], False, False)
+            img_covarianted = resize(img_covarianted, (img_height, img_width), anti_aliasing=True)
 
-        img_uncovarianted = dataset.load_img(filenames[most_uncovarianted_img_index], False, False)
-        img_uncovarianted = resize(img_uncovarianted, (img_height, img_width), anti_aliasing=True)
+            img_uncovarianted = dataset.load_img(filenames[most_uncovarianted_img_index], False, False)
+            img_uncovarianted = resize(img_uncovarianted, (img_height, img_width), anti_aliasing=True)
 
-        _, axarr = plt.subplots(1, 3, figsize=(9, 3))
-        axarr[0].imshow(img)
-        axarr[0].set_title('Image')
-        axarr[1].imshow(img_covarianted)
-        axarr[1].set_title('Most covarianted image\n (coef = ' + str(round(max_v, 2)) + ')')
-        axarr[2].imshow(img_uncovarianted)
-        axarr[2].set_title('Most uncovarianted image\n (coef = ' + str(round(min_v, 2)) + ')')
-        plt.show()
+            _, axarr = plt.subplots(1, 3, figsize=(9, 3))
+            axarr[0].imshow(img)
+            axarr[0].set_title('Image')
+            axarr[1].imshow(img_covarianted)
+            axarr[1].set_title(
+                'Biggest positive \n covariance image\n (coef = ' + str(round(row[most_covarianted_img_index], 2)) + ')')
+            axarr[2].imshow(img_uncovarianted)
+            axarr[2].set_title(
+                'Biggest negative \n covariance image\n (coef = ' + str(round(row[most_uncovarianted_img_index], 2)) + ')')
+            # plt.show()
+            plt.savefig('results/covariance/cov_result_' + str(index_row) + '.jpg')
+            plt.clf()
+
 
 def get_covariances_matrix_for_each_images(filenames, img_height, img_width):
+    """
+         The function return covariances matrix for each image
+
+         @param filenames:
+         @param img_height:
+         @param img_width:
+         @return:
+            covariances
+    """
     covariances = []
     helpers.progress(0, len(filenames))
     for i, img_path in enumerate(filenames[13:20]):
@@ -277,7 +385,17 @@ def get_covariances_matrix_for_each_images(filenames, img_height, img_width):
 
     return covariances
 
+
 def get_covariances_pixel_with_pixel(filenames, img_height, img_width):
+    """
+         The function return covariance pixel with pixel
+
+         @param filenames:
+         @param img_height:
+         @param img_width:
+         @return:
+            covariances
+    """
     covariances = []
     helpers.progress(0, len(filenames))
     images = []
@@ -305,14 +423,30 @@ def get_covariances_pixel_with_pixel(filenames, img_height, img_width):
 
     return covariances
 
+
 def get_covariance_for_img(img):
+    """
+         The function return covariance for image
+
+         @param img:
+         @return:
+            cov
+    """
     pixels = img.reshape(img.shape[0] * img.shape[1], img.shape[2])
 
     cov = np.cov(pixels)
 
     return cov
 
+
 def search_similar_image(features, train_filenames, test_filenames):
+    """
+         The function plot similar images
+
+         @param features:
+         @param train_filenames:
+         @param test_filenames:
+    """
     for index1, filename in enumerate(test_filenames):
         min = 999999999999999999
         argmin = 0

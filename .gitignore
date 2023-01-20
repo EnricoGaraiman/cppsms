@@ -1,5 +1,4 @@
 .idea
 stanfordDogsDataset
 __pycache__/
-results/features
-results/search_bow
+results
