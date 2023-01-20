@@ -18,7 +18,7 @@ img_width = 256
 redo_features = True
 redu_suffix = '_10'
 bbox = False
-no_clusters = 50
+no_clusters = 60
 
 # ___________________________________________
 # DATASET
