@@ -214,23 +214,3 @@ def save_features(features, featuresName):
     """
     for i, feature in enumerate(features):
         save('results/features/' + featuresName[i] + '.npy', feature)
-
-
-# def load_features_train():
-#     tfidf_train = load('results/features/tfidf_train.npy')
-#     descriptors_train = load('results/features/descriptors_train.npy', allow_pickle=True)
-#     frequency_vectors_train = load('results/features/frequency_vectors_train.npy')
-#     dataset_train_labels = load('results/features/dataset_train_labels.npy')
-#     features_train = [] #load('results/features/features_train.npy')
-#
-#     return tfidf_train, descriptors_train, frequency_vectors_train, dataset_train_labels, features_train
-#
-#
-# def load_features_test():
-#     tfidf_test = load('results/features/tfidf_test.npy')
-#     descriptors_test = load('results/features/descriptors_test.npy', allow_pickle=True)
-#     frequency_vectors_test = load('results/features/frequency_vectors_test.npy')
-#     dataset_test_labels = load('results/features/dataset_test_labels.npy')
-#     features_test = [] #load('results/features/features_test.npy')
-#
-#     return tfidf_test, descriptors_test, frequency_vectors_test, dataset_test_labels, features_test

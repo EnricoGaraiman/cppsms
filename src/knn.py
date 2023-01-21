@@ -22,10 +22,6 @@ def knn_classifier(dataset_train_features, dataset_train_labels, dataset_test_fe
     """
     classifier = KNeighborsClassifier(
         n_neighbors=optimal_k,
-        # metric='minkowski',
-        # p=2,
-        # algorithm='auto',
-        # weights='distance'
     )
     classifier.fit(dataset_train_features, dataset_train_labels)
 
