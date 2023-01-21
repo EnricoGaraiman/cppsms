@@ -61,20 +61,22 @@ def dataset_examples_each_class(data_train_dir, img_height, img_width, show=True
          @param img_width:
          @param show:
     """
-    for interval in [[0, 60], [60, 120]]:
-        fig = plt.figure(figsize=(18, 9))
-        for index, class_dir in enumerate(glob.glob(data_train_dir + '/*')[interval[0]: interval[1]]):
-            plt.subplot(6, 10, index + 1)
-            # img = io.imread(glob.glob(class_dir + '/*')[4])
-            img = load_img(glob.glob(class_dir + '/*')[4], False, False)
-            # img_resize = resize(img, (img_height, img_width), anti_aliasing=True)
-            plt.imshow(img, cmap='gray')
-            plt.title((class_dir.split('\\')[-1]).split('-')[-1])
+    # for interval in [[0, 60], [60, 120]]:
+    fig = plt.figure(figsize=(18, 9))
+    # for index, class_dir in enumerate(glob.glob(data_train_dir + '/*')[interval[0]: interval[1]]):
+    for index, class_dir in enumerate(glob.glob(data_train_dir + '/*')):
+        plt.subplot(2, 5, index + 1)
+        # img = io.imread(glob.glob(class_dir + '/*')[4])
+        img = load_img(glob.glob(class_dir + '/*')[4], False, False)
+        # img_resize = resize(img, (img_height, img_width), anti_aliasing=True)
+        plt.imshow(img, cmap='gray')
+        plt.title((class_dir.split('\\')[-1]).split('-')[-1])
 
-        plt.tight_layout()
-        if show:
-            plt.show()
+    plt.tight_layout()
+    if show:
+        plt.show()
         # fig.savefig('results/training_data_visualisation_' + str(interval[0]) + '-' + str(interval[1]) + '.jpg')
+        fig.savefig('results/training_data_visualisation_.jpg')
 
 
 # -----------------------------------------------------------------------------
@@ -95,15 +97,15 @@ def dataset_distribution(data_train_dir):
 
     x_pos = [i for i, _ in enumerate(class_labels)]
 
-    fig, ax = plt.subplots(figsize=(18, 9))
+    fig, ax = plt.subplots(figsize=(18, 15))
     plt.bar(x_pos, class_images_distribution, color='green')
-    plt.xlabel("Number of images", fontsize=12)
-    plt.ylabel("Class", fontsize=12)
+    plt.xlabel("Number of images", fontsize=16)
+    plt.ylabel("Class", fontsize=16)
     plt.title("Data distribution", fontsize=16)
-    plt.xticks(x_pos, class_labels, fontsize=8, rotation=45, ha='right')
+    plt.xticks(x_pos, class_labels, fontsize=16, rotation=45, ha='right')
     plt.tight_layout()
     plt.show()
-    # fig.savefig('results/training_data_distribution.jpg')
+    fig.savefig('results/training_data_distribution.jpg')
 
 
 # -----------------------------------------------------------------------------

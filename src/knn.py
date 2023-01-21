@@ -8,7 +8,7 @@ from sklearn.model_selection import cross_val_score
 
 
 def knn_classifier(dataset_train_features, dataset_train_labels, dataset_test_features, dataset_test_labels,
-                   class_names, optimal_k):
+                   class_names, optimal_k, no_clusters):
     """
          The function make classification ang display results
 
@@ -18,6 +18,7 @@ def knn_classifier(dataset_train_features, dataset_train_labels, dataset_test_fe
          @param dataset_test_labels:
          @param class_names:
          @param optimal_k:
+         @param no_clusters:
     """
     classifier = KNeighborsClassifier(
         n_neighbors=optimal_k,
@@ -42,22 +43,24 @@ def knn_classifier(dataset_train_features, dataset_train_labels, dataset_test_fe
     cmx = confusion_matrix(dataset_test_labels, y_pred, normalize='true')
     disp = ConfusionMatrixDisplay(confusion_matrix=cmx, display_labels=class_names)
 
-    fig, ax = plt.subplots(figsize=(30, 30))
-    fig.suptitle('Matrice de confuzie', fontsize=16)
-    plt.xlabel('True label', fontsize=12)
-    plt.ylabel('Predicted label', fontsize=12)
+    fig, ax = plt.subplots(figsize=(13, 10))
+    fig.suptitle('Confusion matrix', fontsize=16)
+    plt.xlabel('True label', fontsize=16)
+    plt.ylabel('Predicted label', fontsize=16)
     disp.plot(ax=ax, xticks_rotation=45)
+    plt.tight_layout()
     # plt.show()
-    plt.savefig('results/confusion-matrix.png')
+    plt.savefig('results/confusion-matrix' + str(no_clusters) + '.png')
     plt.clf()
 
 
-def get_optimal_k_for_knn(image_features, train_labels):
+def get_optimal_k_for_knn(image_features, train_labels, no_clusters):
     """
          The function find optimal k
 
          @param image_features:
          @param train_labels:
+         @param no_clusters:
          @return:
             optimal_k
     """
@@ -85,7 +88,7 @@ def get_optimal_k_for_knn(image_features, train_labels):
     plt.xlabel("Number of Neighbors")
     plt.ylabel("Error")
     # plt.show()
-    plt.savefig('results/error-optimal-k.png')
+    plt.savefig('results/error-optimal-k' + str(no_clusters) + '.png')
     plt.clf()
 
     return optimal_k

@@ -11,6 +11,8 @@ import src.dataset as dataset
 import skimage.measure as measure
 import math as math
 import random
+from sklearn.preprocessing import StandardScaler
+
 
 def get_features(filenames, img_height=None, img_width=None, progress=True):
     """
@@ -53,9 +55,9 @@ def get_features(filenames, img_height=None, img_width=None, progress=True):
         img_features.extend(hu_log)
 
         # graycomatrix
-        for prop in get_gray_comatrix_features(img):
-            for p in prop:
-                img_features.extend(p)
+        # for prop in get_gray_comatrix_features(img):
+        #     for p in prop:
+        #         img_features.extend(p)
 
         # #skew = asimetrie
         # for channel in channels:
@@ -268,7 +270,7 @@ def plot_moments_hu(features, title, name_of_feature, save=True, show=True):
         fig.savefig('results/' + title + '.jpg')
 
 
-def get_covariance_matrix(filenames, img_height, img_width, bbox = False):
+def get_covariance_matrix(filenames, img_height, img_width, bbox=False):
     """
          The function return covariance matrix
 
@@ -346,10 +348,12 @@ def view_images_with_max_covariance(covariance_matrix, filenames, img_height, im
             axarr[0].set_title('Image')
             axarr[1].imshow(img_covarianted)
             axarr[1].set_title(
-                'Biggest positive \n covariance image\n (coef = ' + str(round(row[most_covarianted_img_index], 2)) + ')')
+                'Biggest positive \n covariance image\n (coef = ' + str(
+                    round(row[most_covarianted_img_index], 2)) + ')')
             axarr[2].imshow(img_uncovarianted)
             axarr[2].set_title(
-                'Biggest negative \n covariance image\n (coef = ' + str(round(row[most_uncovarianted_img_index], 2)) + ')')
+                'Biggest negative \n covariance image\n (coef = ' + str(
+                    round(row[most_uncovarianted_img_index], 2)) + ')')
             # plt.show()
             plt.savefig('results/covariance/cov_result_' + str(index_row) + '.jpg')
             plt.clf()
@@ -439,14 +443,17 @@ def get_covariance_for_img(img):
     return cov
 
 
-def search_similar_image(features, train_filenames, test_filenames):
+def search_similar_image(features, train_filenames, test_filenames, dataset_train_labels, dataset_test_labels):
     """
          The function plot similar images
 
          @param features:
          @param train_filenames:
          @param test_filenames:
+         @param dataset_train_labels:
+         @param dataset_test_labels:
     """
+    correct = 0
     for index1, filename in enumerate(test_filenames):
         min = 999999999999999999
         argmin = 0
@@ -460,6 +467,9 @@ def search_similar_image(features, train_filenames, test_filenames):
                 argmin = index2
                 min = loss
 
+        if dataset_test_labels[index1] == dataset_train_labels[argmin]:
+            correct = correct + 1
+
         img_sim = dataset.load_img(train_filenames[argmin], False, False)
 
         _, axarr = plt.subplots(1, 2)
@@ -467,4 +477,22 @@ def search_similar_image(features, train_filenames, test_filenames):
         axarr[0].set_title('Searched image')
         axarr[1].imshow(img_sim)
         axarr[1].set_title('Most similar image')
-        plt.show()
+        # plt.show()
+        plt.savefig('results/search/search_engine_' + str(index1) + '.png')
+    print('Accuracy image search: ', correct / len(dataset_test_labels) * 100, '%')
+
+def standardize(features_train, features_test):
+    """
+        The function standardize features
+
+        @param features_train:
+        @param features_test:
+        @return
+            features_train:
+            features_test:
+       """
+    scale = StandardScaler().fit(features_train)
+    features_train = scale.transform(features_train)
+    features_test = scale.transform(features_test)
+
+    return features_train, features_test

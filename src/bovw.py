@@ -7,16 +7,17 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
 
-def extract_bovw(dataset_images, number_of_clusters, redo_features, redu_suffix = ''):
+def extract_bovw(dataset_images, number_of_clusters, redo_features, redo_suffix = '', extractor = 'SIFT'):
     """
-    The function receives the images and the number of clusters. compute all descriptors using SIFT,
+    The function receives the images and the number of clusters. compute all descriptors using SIFT/ORB,
     group them, extract features and standardize them. The kmeans object,
     the scale object and the standardized features are returned.
 
     @param dataset_images:
     @param number_of_clusters:
     @param redo_features:
-    @param redu_suffix:
+    @param redo_suffix:
+    @param extractor:
     @return:
         kmeans
         scale
@@ -24,7 +25,7 @@ def extract_bovw(dataset_images, number_of_clusters, redo_features, redu_suffix 
         frequency
     """
     if not redo_features:
-        return None, None, np.load('results/features/features_train' + redu_suffix + '.npy')
+        return None, None, np.load('results/features/features_train' + redo_suffix + '.npy')
 
     # descriptor_list = []
     # for img in dataset_images:
@@ -37,13 +38,16 @@ def extract_bovw(dataset_images, number_of_clusters, redo_features, redu_suffix 
     helpers.progress(0, len(dataset_images))
     for i, img in enumerate(dataset_images):
         img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX).astype('uint8')
-        des = sift_descriptor(img)
+        if extractor == 'SIFT':
+            des = sift_descriptor(img)
+        elif extractor == 'ORB':
+            des = orb_descriptor(img)
         if des is not None:
             count += 1
             descriptor_list.append(des)
         else:
             print('train', i)
-        helpers.progress(i + 1, len(dataset_images), 'SIFT train')
+        helpers.progress(i + 1, len(dataset_images), extractor + ' train')
 
     descriptors = descriptor_vstack(descriptor_list)
     print("\nDescriptors vstacked.")
@@ -51,8 +55,8 @@ def extract_bovw(dataset_images, number_of_clusters, redo_features, redu_suffix 
     kmeans = descriptors_clustering(descriptors, number_of_clusters)
     print("Descriptors clustered using K-means.")
 
-    im_features = features_extract(kmeans, descriptor_list, count, number_of_clusters)
-    print("Images features extracted using SIFT.")
+    im_features = features_extract(kmeans, descriptor_list, count, number_of_clusters, extractor)
+    print("Images features extracted using " + extractor)
 
     scale = StandardScaler().fit(im_features)
     im_features = scale.transform(im_features)
@@ -73,10 +77,33 @@ def sift_descriptor(img):
     sift = cv2.SIFT_create()
     kp, descriptors = sift.detectAndCompute(img, None)
 
-    # show
+    # # show
     # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # plt.figure()
     # img = cv2.drawKeypoints(gray, kp, img, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
     # plt.imshow(img)
+    # plt.show()
+    # plt.clf()
+
+    return descriptors
+
+def orb_descriptor(img):
+    """
+       The function receives the image and return ORB descriptors.
+
+       @param img:
+       @return:
+           descriptors
+    """
+    sift = cv2.ORB_create()
+    kp, descriptors = sift.detectAndCompute(img, None)
+
+    # # show
+    # gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # plt.figure()
+    # img = cv2.drawKeypoints(gray, kp, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    # plt.imshow(img)
+    # plt.show()
     # plt.clf()
 
     return descriptors
@@ -113,7 +140,7 @@ def descriptors_clustering(descriptors, no_clusters):
     return kmeans
 
 
-def features_extract(kmeans, descriptor_list, image_count, no_clusters):
+def features_extract(kmeans, descriptor_list, image_count, no_clusters, extractor):
     """
        The function receives the kmeans, list of descriptors, number of images and number of clusters.
        Features are returned after kmeans predict.
@@ -122,15 +149,17 @@ def features_extract(kmeans, descriptor_list, image_count, no_clusters):
        @param descriptor_list:
        @param image_count:
        @param no_clusters:
+       @param extractor:
        @return:
            im_features
     """
+    size = 128 if extractor == 'SIFT' else 32
     im_features = np.array([np.zeros(no_clusters) for i in range(image_count)])
     helpers.progress(0, image_count)
     for i in range(image_count):
         for j in range(len(descriptor_list[i])):
             feature = descriptor_list[i][j]
-            feature = feature.reshape(1, 128)
+            feature = feature.reshape(1, size)
             idx = kmeans.predict(feature)
             im_features[i][idx] += 1
         helpers.progress(i + 1, image_count, 'Feature extraction')
@@ -151,16 +180,18 @@ def plot_histogram(im_features, no_clusters):
     x_scalar = np.arange(no_clusters)
     y_scalar = np.array([abs(np.sum(im_features[:, h], dtype=np.int32)) for h in range(no_clusters)])
     plt.bar(x_scalar, y_scalar)
-    plt.xlabel("Visual Word Index")
-    plt.ylabel("Frequency")
-    plt.title("Complete Visual Words Generated")
-    plt.xticks(x_scalar + 0.4, x_scalar, fontsize=10)
+    plt.xlabel("Visual Word Index", fontsize=16)
+    plt.ylabel("Frequency", fontsize=16)
+    plt.title("Complete Visual Words Generated", fontsize=20)
+    plt.xticks(fontsize=16)
+    plt.yticks(fontsize=16)
+    plt.tight_layout()
     # plt.show()
-    plt.savefig('results/histogram-bow.png')
+    plt.savefig('results/histogram-bow' + str(no_clusters) + '.png')
     plt.clf()
 
 
-def extract_test_bovw(dataset_test_images, number_of_clusters, kmeans, scale, redo_features, redu_suffix = ''):
+def extract_test_bovw(dataset_test_images, number_of_clusters, kmeans, scale, redo_features, redo_suffix = '', extractor = 'SIFT'):
     """
        The function receives the set of test images, the number of clusters, the kmeans object and the scales object.
        The descriptors are extracted and then the features of the test set are determined which are also standardized.
@@ -170,27 +201,31 @@ def extract_test_bovw(dataset_test_images, number_of_clusters, kmeans, scale, re
        @param kmeans:
        @param scale:
        @param redo_features:
+       @param extractor:
        @return:
            test_features
            frequency
     """
     if not redo_features:
-        return np.load('results/features/features_test' + redu_suffix + '.npy')
+        return np.load('results/features/features_test' + redo_suffix + '.npy')
 
     count = 0
     descriptor_list = []
     helpers.progress(0, len(dataset_test_images))
     for i, img in enumerate(dataset_test_images):
         img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX).astype('uint8')
-        des = sift_descriptor(img)
+        if extractor == 'SIFT':
+            des = sift_descriptor(img)
+        elif extractor == 'ORB':
+            des = orb_descriptor(img)
         if des is not None:
             count += 1
             descriptor_list.append(des)
         else:
             print('test', i)
-        helpers.progress(i + 1, len(dataset_test_images), 'SIFT test')
+        helpers.progress(i + 1, len(dataset_test_images), extractor + ' test')
 
-    test_features = features_extract(kmeans, descriptor_list, count, number_of_clusters)
+    test_features = features_extract(kmeans, descriptor_list, count, number_of_clusters, extractor)
     test_features = scale.transform(test_features)
 
     return test_features
@@ -221,22 +256,27 @@ def get_tfidf(visual_words):
     return tfidf
 
 
-def get_similar_images(tfidf, images, search_imgs, show=False, save=False):
+def get_similar_images(features_train, images_train, features_test, images_test, dataset_train_labels, dataset_test_labels, show=False, save=False, no_clusters = None):
     """
        The function receives tfidf and the set of images. For given search images, find similar top_k images
 
-       @param tfidf:
-       @param images:
-       @param search_imgs:
+       @param features_train:
+       @param images_train:
+       @param features_test:
+       @param images_test:
+       @param dataset_train_labels:
+       @param dataset_test_labels:
        @param show:
        @param save:
+       @param no_clusters:
     """
     top_k = 6
 
-    for ind in search_imgs:
+    correct = 0
+    for j, img in enumerate(images_test):
         # get search image vector
-        a = tfidf[ind]
-        b = tfidf  # set search space to the full sample
+        a = features_test[j]
+        b = features_train  # set search space to the full sample
 
         # get the cosine distance for the search image `a`
         cosine_similarity = np.dot(a, b.T) / (norm(a) * norm(b, axis=1))
@@ -245,22 +285,31 @@ def get_similar_images(tfidf, images, search_imgs, show=False, save=False):
         idx = np.argsort(-cosine_similarity)[:top_k]
 
         # display the results
-        plt.figure(figsize=(10, 5))
+        good = False
+        if show or save:
+            plt.figure(figsize=(10, 5))
         for i, index in enumerate(idx):
-            if i == 0:
-                plt.subplot(2, top_k, top_k // 2)
-                plt.gca().set_title(f"{ind}: Original image: {round(cosine_similarity[index], 4)}")
-                plt.imshow(images[index], cmap='gray')
-            else:
-                plt.subplot(2, top_k, top_k // 2 + 3 + i)
-                plt.gca().set_title(f"{index}: {round(cosine_similarity[index], 4)}")
-                plt.imshow(images[index], cmap='gray')
+            if show or save:
+                if i == 0:
+                    plt.subplot(2, 2, 1)
+                    plt.gca().set_title(f"{j}: Original image")
+                    plt.imshow(img, cmap='gray')
+                else:
+                    if i == 1:
+                        plt.subplot(2, 2, 2)
+                        plt.gca().set_title(f"{index}: {round(cosine_similarity[index], 4)}")
+                        plt.imshow(images_train[index], cmap='gray')
+            if i == 1 and dataset_test_labels[j] == dataset_train_labels[index]:
+                correct = correct + 1
+                good = True
 
         if show:
             plt.show()
         if save:
-            plt.savefig('results/search_bow/search_engine_' + str(ind) + '.png')
+            plt.savefig('results/search_bow/' + str(no_clusters) + 'search_engine_' + str(j) + ('_correct' if good else '') + '.png')
         plt.clf()
+
+    print('Accuracy image search: ', correct / len(images_test) * 100, '%')
 
 #
 # def extract_bovw(descriptors, number_of_images, dataset_images = None):
