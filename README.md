@@ -9,8 +9,8 @@ image. The features that are extracted are used to represent
 the image and are used as inputs for the classification algorithm.
 The quality and relevance of the features extracted can greatly
 affect the performance of the classification algorithm. This paper
-presents a method for classifying dog breeds using the Stanford
-Dogs Dataset, as well as an image search engine. The method
+presents a method for classifying dog breeds and an image search engine, using the images from Stanford
+Dogs Dataset. The method
 proposed utilizes the Bag of Visual Words (BoVW) approach,
 where SIFT and ORB algorithms are employed to identify unique
 descriptors. These descriptors are then used to determine the
